@@ -10,69 +10,97 @@ function excludeRect(context, canvas, x, y, endx, endy){
     righty = Math.max(y, endy)
     context.clearRect(topx, lefty, botx-topx, righty-lefty)
 }
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  chrome.tabs.captureVisibleTab(sender.tab.windowId, {}, function (dataUrl) {
-    sendResponse({ imgSrc: dataUrl });
-    var newWindow = window.open('/screenshot.html')
-    newWindow.onload = (event) => {
-      var res_multiplier = 2
-      var canvas = newWindow.document.getElementById('canvas')
-      var context = canvas.getContext("2d")
-      var width=newWindow.innerWidth
-      var height=newWindow.innerHeight
-      const img = new Image();
-      img.onload=function(){
-        // The below is a hack to make a high resolution canvas, as found here: https://stackoverflow.com/questions/67572294/canvas-drawimage-with-high-quality-javascript . Otherwise, the HTML image is blurry.
-        canvas.height = height*res_multiplier
-        canvas.width = width*res_multiplier
-        canvas.style.width = "100%"
-        context.drawImage(img, 0, 0, canvas.width, canvas.height)
-      }
-      img.src = dataUrl
-      // Get the layering canvas which governs visual effects over existing image.
-      var layer_canvas = newWindow.document.getElementById('layer')
-      var layer_context = layer_canvas.getContext("2d")
-      // Add mouse listeners.
-      var x = 500, y = 500, endx = 900, endy = 900;
-      let moved, clicked = false
-      function downListener(event) {
-        moved = false
-        clicked = true
-        x = event.clientX
-        y = event.clientY
-      }
-      layer_canvas.addEventListener('mousedown', downListener);
-      function moveListener(event) {
-        moved = true
-        if (clicked){
-          endx = event.clientX
-          endy = event.clientY
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+  console.log("Message")
+  console.log(message)
+  if (message.length > 0 && message[0] == "Hello") {
+    chrome.tabs.captureVisibleTab(sender.tab.windowId, {}, function (dataUrl) {
+      sendResponse({ imgSrc: dataUrl });
+      var newWindow = window.open('/screenshot.html')
+      newWindow.onload = (event) => {
+        var res_multiplier = 2
+        var canvas = newWindow.document.getElementById('canvas')
+        var context = canvas.getContext("2d")
+        var width=newWindow.innerWidth
+        var height=newWindow.innerHeight
+        const img = new Image();
+        img.onload=function(){
+          // The below is a hack to make a high resolution canvas, as found here: https://stackoverflow.com/questions/67572294/canvas-drawimage-with-high-quality-javascript . Otherwise, the HTML image is blurry.
+          canvas.height = height*res_multiplier
+          canvas.width = width*res_multiplier
+          canvas.style.width = "100%"
+          context.drawImage(img, 0, 0, canvas.width, canvas.height)
         }
-      }
-      layer_canvas.addEventListener('mousemove', moveListener);
-      function upListener(event) {
-        x = endx; y = endy;
-        clicked = false
-        if(moved) {
-          console.log('moved')
+        img.src = dataUrl
+        // Get the layering canvas which governs visual effects over existing image.
+        var layer_canvas = newWindow.document.getElementById('layer')
+        var layer_context = layer_canvas.getContext("2d")
+
+        // Add mouse listeners.
+        var x = 0, y = 0, endx = 0, endy = 0;
+        let moved, clicked = false
+        function downListener(event) {
+          moved = false
+          clicked = true
+          x = event.clientX
+          y = event.clientY
         }
-        else{
-          console.log('not moved')
+        layer_canvas.addEventListener('mousedown', downListener);
+        function moveListener(event) {
+          moved = true
+          if (clicked){
+            endx = event.clientX
+            endy = event.clientY
+          }
         }
+        layer_canvas.addEventListener('mousemove', moveListener);
+        function upListener(event) {
+          if(moved && clicked) {
+            console.log('moved and clicked')
+            let screenshot_dataURL = save_image(canvas, res_multiplier*x, res_multiplier*y, res_multiplier*endx, res_multiplier*endy)
+            screenshot_image = document.createElement("img")
+            screenshot_image.onload=function(){
+              document.body.appendChild(screenshot_image)
+              document.body.innerHTML += "Hello!"
+            }
+            screenshot_image.style.maxWidth="100%"
+            screenshot_image.src = screenshot_dataURL
+            console.log(screenshot_dataURL)
+            newWindow.close()
+            
+          }
+          else{
+            console.log('not moved-n-clicked')
+          }
+          // Reset clicked state if clicked was true for a single click.
+          clicked = false
+          x = endx; y = endy;
+        }
+        layer_canvas.addEventListener('mouseup', upListener);
+
+        // Draw rectangle Animation
+        function startAnimation(){
+          newWindow.requestAnimationFrame(draw)
+        }
+        function draw(){
+          layer_context.clearRect(0, 0, layer_canvas.width, layer_canvas.height);
+          excludeRect(layer_context, layer_canvas, x, y, endx, endy);
+          newWindow.requestAnimationFrame(draw)
+        }
+        layer_context.globalAlpha = 0.25;
+        startAnimation()
       }
-      layer_canvas.addEventListener('mouseup', upListener);
-      // Draw rectangle Animation
-      function init(){
-        newWindow.requestAnimationFrame(draw)
-      }
-      function draw(){
-        layer_context.clearRect(0, 0, layer_canvas.width, layer_canvas.height);
-        excludeRect(layer_context, layer_canvas, x, y, endx, endy);
-        newWindow.requestAnimationFrame(draw)
-      }
-      layer_context.globalAlpha = 0.25;
-      init()
-    }
-  });
+    });
+  }
   return true;
 });
+function save_image(canvas, x, y, endx, endy){
+  var hidden_canvas = document.createElement('canvas');
+  var hidden_context = hidden_canvas.getContext('2d');
+  hidden_canvas.width= endx - x
+  hidden_canvas.height= endy - y
+  hidden_canvas.style.width = canvas.style.width;
+  hidden_context.drawImage(canvas, -x, -y, canvas.width, canvas.height);
+  console.log(x, y, endx, endy)
+  return hidden_canvas.toDataURL();
+}
