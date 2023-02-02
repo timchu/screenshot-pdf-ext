@@ -1,0 +1,26 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+.close-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+    font-size: 25px;
+}
+.text-container {
+    border: 3px solid black;
+    display: block;
+    position: relative;
+}
+.image-container {
+    border: 3px solid green;
+    display: block;
+    position: relative;
+}
+.caption {
+  text-align:center;
+  font-size:18px;
+  font-weight:bold;
+}
