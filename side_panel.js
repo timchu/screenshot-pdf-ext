@@ -2,6 +2,8 @@
 // Which would otherwise require getting a new listener set up there, which is annoying. So perhaps
 // controlling it from here is fine? At least it shouldn't live in sidepanel.js though.
 
+document.body.style.backgroundColor="white"
+
 function excludeRect(context, canvas, x, y, endx, endy){
     context.fillRect(0, 0, canvas.width, canvas.height);
     topx = Math.min(x, endx)
@@ -73,6 +75,8 @@ function screenshot(sender){
             screenshot_image = document.createElement("img")
             screenshot_image.onload=function(){
               document.body.appendChild(screenshot_image)
+              spacer = document.createElement("p") 
+              document.body.appendChild(spacer)
             }
             screenshot_image.style.maxWidth="100%"
             screenshot_image.src = screenshot_dataURL

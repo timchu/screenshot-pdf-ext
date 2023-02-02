@@ -24,9 +24,7 @@
       "js": ["content.js"],
       "matches": [
           "https://*/*pdf",
-          "http://*/*pdf",
-          "http://*/*",
-          "https://*/*"
+          "http://*/*pdf"
       ],
       "exclude_matches": [
           "*://*.google.com/*",
