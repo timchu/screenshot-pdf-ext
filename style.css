@@ -2,6 +2,11 @@ html, body {
     height: 100%;
     margin: 0;
 }
+.sticky{
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top: 0;
+}
 .close-button {
     position: absolute;
     top: 0;

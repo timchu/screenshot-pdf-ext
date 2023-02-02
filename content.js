@@ -19,17 +19,21 @@ async function message(t, m){
     (async () => { const response = await chrome.runtime.sendMessage(m); 
     })();
 }
+async function injectListeners(t){
+  await new Promise(r => setTimeout(r, t));
+  console.log("Injecting")
+}
+
 async function addListeners(t){
   await new Promise(r => setTimeout(r, t));
-  document.body.addEventListener('click', function() { message(0, ["hello"]) });
+  console.log("Adding listeners")
+  let iframe = document.getElementById('mainframe')
+  document.addEventListener('click', function() { 
+        message(0, ["Hello"]) });
 }
 // Catch all the links loaded by iframe
 message(2000, ["Hello"]);
-//addListeners(1000)
-clickEnable(1000);
-clickEnable(2000);
-clickEnable(5000);
-clickEnable(15000);
+//injectListeners(1000)
 enterEnable(1000);
 //document.body.addEventListener('click', function(){ clickedBody(); });
 function logText(){

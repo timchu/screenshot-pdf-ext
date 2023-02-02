@@ -10,12 +10,24 @@ function excludeRect(context, canvas, x, y, endx, endy){
     righty = Math.max(y, endy)
     context.clearRect(topx, lefty, botx-topx, righty-lefty)
 }
+
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-  console.log("Message")
-  console.log(message)
   if (message.length > 0 && message[0] == "Hello") {
+    screenshot_icon = document.getElementById('screenshot_icon')
+    console.log(screenshot_icon);
+    screenshot_icon.addEventListener('click', function() {
+        screenshot(sender)
+    });
+    console.log("Message")
+    console.log(message)
+  }
+  sendResponse(["Received!"]);
+return true;
+});
+// Reactivate this if you want this to fire on messages
+function screenshot(sender){
+    console.log("What up")
     chrome.tabs.captureVisibleTab(sender.tab.windowId, {}, function (dataUrl) {
-      sendResponse({ imgSrc: dataUrl });
       var newWindow = window.open('/screenshot.html')
       newWindow.onload = (event) => {
         var res_multiplier = 2
@@ -61,11 +73,9 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
             screenshot_image = document.createElement("img")
             screenshot_image.onload=function(){
               document.body.appendChild(screenshot_image)
-              document.body.innerHTML += "Hello!"
             }
             screenshot_image.style.maxWidth="100%"
             screenshot_image.src = screenshot_dataURL
-            console.log(screenshot_dataURL)
             newWindow.close()
             
           }
@@ -91,9 +101,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         startAnimation()
       }
     });
-  }
-  return true;
-});
+}
 function save_image(canvas, x, y, endx, endy){
   var hidden_canvas = document.createElement('canvas');
   var hidden_context = hidden_canvas.getContext('2d');

@@ -5,7 +5,7 @@
   "permissions": ["tabs", "storage", "downloads", "activeTab", "scripting"],
   "host_permissions":["<all_urls>"],
   "web_accessible_resources": [{
-    "resources": ["screenshot.html", "side_panel.html", "side_panel.js"],
+    "resources": ["style.css", "scissors.jpg", "screenshot.html", "side_panel.html", "side_panel.js"],
     "matches": [
               "https://*/*",
               "http://*/*"
@@ -24,7 +24,9 @@
       "js": ["content.js"],
       "matches": [
           "https://*/*pdf",
-          "http://*/*pdf"
+          "http://*/*pdf",
+          "http://*/*",
+          "https://*/*"
       ],
       "exclude_matches": [
           "*://*.google.com/*",
